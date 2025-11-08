@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class=""><head><script>window.livecodes = window.livecodes || {};</script><title>Bus driver </title><meta name="title" content="Bus driver "><meta name="description" content="Add all staff members "><meta charset="UTF-8">
+<html lang="en" class=""><head><script>window.livecodes = window.livecodes || {};</script><title>Bus driver </title><meta name="title" content="Bus driver "><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="stylesheet" href="./style.css"><script src="https://cdn.jsdelivr.net/npm/es-module-shims@1.10.0/dist/es-module-shims.js" async=""></script><script type="importmap">{
   "imports": {}
 }</script></head><body>
@@ -16,7 +16,8 @@
     </style>
 
 
-    <div class="max-w-4xl mx-auto p-4">
+    <audio id="local-audio-player" class="hidden"></audio>
+    <div class="max-w-7xl mx-auto p-4">
         <h1 class="text-3xl font-bold text-gray-800 mb-4">Staff Transport Management</h1>
 
         <!-- Controls -->
@@ -27,6 +28,76 @@
                 <div class="text-sm">
                     <p>Status: <span id="trip-status" class="font-bold text-gray-600">Idle</span></p>
                     <p>Location: <span id="location-status" class="font-bold text-gray-600">Not Sharing</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Media & TV Control Center -->
+        <div class="mb-4 p-4 bg-white rounded-lg shadow">
+            <h2 class="text-xl font-bold text-gray-800 mb-3">Media &amp; Bus TV Control</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Music Player -->
+                <div class="lg:col-span-1">
+                    <h3 class="font-semibold text-gray-700 mb-2">Music Player</h3>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <div class="flex items-center gap-2">
+                                <button id="play-pause-btn" class="p-3 bg-indigo-600 text-white rounded-full shadow-md hover:bg-indigo-700" title="Play/Pause">
+                                    <svg id="play-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
+                                    <svg id="pause-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clip-rule="evenodd"></path></svg>
+                                </button>
+                                <button id="next-track-btn" class="p-2 rounded-full text-gray-500 hover:bg-gray-200" title="Next Track">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
+                                </button>
+                            </div>
+                            <div class="flex-grow text-sm text-gray-600 min-w-0">
+                                <p id="track-info" class="font-medium truncate">No music loaded</p>
+                                <p id="playlist-info">Playlist is empty</p>
+                            </div>
+                            <div class="flex gap-2">
+                                 <input type="file" id="add-music-input" accept="audio/mp3" class="hidden" multiple="">
+                                 <label for="add-music-input" class="cursor-pointer px-3 py-2 text-xs font-medium rounded-md bg-gray-600 text-white hover:bg-gray-700 whitespace-nowrap">Add</label>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 mt-3 pt-3 border-t border-gray-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
+                            </svg>
+                            <input id="volume-slider" type="range" min="0" max="100" value="80" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                    </div>
+                </div>
+                <!-- YouTube Remote -->
+                <div class="lg:col-span-2 p-3 bg-white border border-gray-200 rounded-lg">
+                    <h4 class="font-semibold text-gray-600 mb-2">YouTube Remote Control</h4>
+                    <div class="space-y-3">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <input type="text" id="youtube-input" placeholder="Search or paste YouTube URL..." class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                <button id="youtube-action-btn" class="flex-shrink-0 px-3 py-2 text-sm font-medium rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed w-32 text-center" disabled="">Search YouTube</button>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4 pt-3 border-t border-gray-200">
+                            <button id="yt-play-pause-btn" title="Play/Pause" class="p-2 bg-indigo-600 text-white rounded-full shadow-md hover:bg-indigo-700 disabled:opacity-50" disabled="">
+                                <svg id="yt-play-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
+                                <svg id="yt-pause-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clip-rule="evenodd"></path></svg>
+                            </button>
+                            <div class="flex items-center gap-2 flex-grow">
+                                <span id="yt-current-time" class="text-xs w-10 text-center">0:00</span>
+                                <input type="range" id="yt-progress-bar" value="0" max="100" class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 disabled:bg-gray-200" disabled="">
+                                <span id="yt-duration" class="text-xs w-10 text-center">0:00</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2 pt-3 border-t border-gray-200">
+                            <span class="text-sm font-medium text-gray-700">Layout:</span>
+                            <button id="layout-token-btn" class="px-3 py-1 text-xs font-medium rounded-md bg-gray-200 text-gray-800 hover:bg-gray-300">Staff Info</button>
+                            <button id="layout-split-btn" class="px-3 py-1 text-xs font-medium rounded-md bg-gray-200 text-gray-800 hover:bg-gray-300">Split</button>
+                            <button id="layout-full-tv-btn" class="px-3 py-1 text-xs font-medium rounded-md bg-gray-200 text-gray-800 hover:bg-gray-300">Full Video</button>
+                            <div class="flex items-center gap-2 ml-auto">
+                                <button id="tv-yt-stop-btn" class="px-3 py-1 text-xs font-medium rounded-md bg-red-600 text-white hover:bg-red-700">Stop</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -79,10 +150,24 @@
             projectId: "navrosetailorapp"
         };
         
-        let db, staffQueueRef, busDetailsRef;
+        let db, staffQueueRef, busDetailsRef, mediaControlsRef;
         let isTripActive = false;
         let staffQueue = [];
         let locationWatcherId = null;
+
+        // Media State
+        let musicPlaylist = [];
+        let currentTrackIndex = -1;
+        let isPlayingMusic = false;
+        let localAudioPlayer;
+        let ytPlayerState = {
+            playlist: [],
+            currentIndex: -1,
+            isPlaying: false,
+            quality: 'default',
+            volume: 80,
+            searchQuery: null,
+        };
 
         const getTodayDateString = () => new Date().toISOString().slice(0, 10);
 
@@ -157,6 +242,100 @@
             }
         }
         
+        // --- Media Logic ---
+        function updateMediaControls(command, data = {}) {
+            const update = { command, timestamp: Date.now(), ...data };
+            mediaControlsRef.update(update);
+        }
+
+        function updateMusicPlayerUI() {
+            const trackInfo = document.getElementById('track-info');
+            const playlistInfo = document.getElementById('playlist-info');
+            const playPauseBtn = document.getElementById('play-pause-btn');
+            const nextTrackBtn = document.getElementById('next-track-btn');
+            const playIcon = document.getElementById('play-icon');
+            const pauseIcon = document.getElementById('pause-icon');
+
+            if (musicPlaylist.length === 0) {
+                trackInfo.textContent = 'No music loaded';
+                playlistInfo.textContent = 'Playlist is empty';
+                playPauseBtn.disabled = true;
+                nextTrackBtn.disabled = true;
+            } else {
+                playPauseBtn.disabled = false;
+                nextTrackBtn.disabled = musicPlaylist.length <= 1;
+                const currentTrack = musicPlaylist[currentTrackIndex];
+                trackInfo.textContent = currentTrack.name;
+                playlistInfo.textContent = `Track ${currentTrackIndex + 1} of ${musicPlaylist.length}`;
+            }
+            playIcon.classList.toggle('hidden', isPlayingMusic);
+            pauseIcon.classList.toggle('hidden', !isPlayingMusic);
+        }
+
+        function playTrack(index) {
+            if (index < 0 || index >= musicPlaylist.length) return;
+            currentTrackIndex = index;
+            isPlayingMusic = true;
+            const track = musicPlaylist[currentTrackIndex];
+            
+            localAudioPlayer.src = track.url;
+            localAudioPlayer.volume = document.getElementById('volume-slider').value / 100;
+            localAudioPlayer.play();
+
+            updateMediaControls('play', { trackUrl: track.url, trackName: track.name });
+            updateMusicPlayerUI();
+        }
+
+        function handleTrackEnd() {
+            if (currentTrackIndex < musicPlaylist.length - 1) {
+                playTrack(currentTrackIndex + 1);
+            } else {
+                isPlayingMusic = false;
+                updateMusicPlayerUI();
+                updateMediaControls('stop');
+            }
+        }
+
+        function handleAddMusic(event) {
+            Array.from(event.target.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    musicPlaylist.push({ name: file.name, url: e.target.result });
+                    if (currentTrackIndex === -1) {
+                        currentTrackIndex = 0;
+                        if (isPlayingMusic) playTrack(0);
+                        else updateMusicPlayerUI();
+                    } else {
+                        updateMusicPlayerUI();
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+            event.target.value = '';
+        }
+
+        function sendYtPlayerState() {
+            mediaControlsRef.update({
+                command: 'update_player_state',
+                state: { ...ytPlayerState, videoIds: ytPlayerState.playlist.map(v => v.id) },
+                timestamp: Date.now(),
+            });
+            if (ytPlayerState.seekTo) delete ytPlayerState.seekTo;
+        }
+        
+        function formatTime(seconds) {
+            if (isNaN(seconds) || seconds < 0) return '0:00';
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = Math.floor(seconds % 60);
+            return `${minutes}:${String(remainingSeconds).padStart(2, '0')}`;
+        }
+
+        function extractYouTubeID(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             firebase.initializeApp(firebaseConfig);
             db = firebase.database();
@@ -164,7 +343,11 @@
             const today = getTodayDateString();
             staffQueueRef = db.ref(`bus_transport/${today}/staff_queue`);
             busDetailsRef = db.ref(`bus_transport/${today}/bus_details`);
-            
+            mediaControlsRef = db.ref(`bus_transport/${today}/media_controls`);
+
+            localAudioPlayer = document.getElementById('local-audio-player');
+
+            // --- Main Listeners ---
             document.getElementById('add-staff-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const staffName = document.getElementById('staff-name').value;
@@ -209,6 +392,121 @@
                 staffQueue = Object.keys(data).map(key => ({ key, ...data[key] }));
                 renderQueue();
             });
+            
+            // --- Media Listeners ---
+            document.getElementById('add-music-input').addEventListener('change', handleAddMusic);
+            document.getElementById('play-pause-btn').addEventListener('click', () => {
+                if (musicPlaylist.length === 0) return;
+                if (isPlayingMusic) {
+                    isPlayingMusic = false;
+                    localAudioPlayer.pause();
+                    updateMediaControls('pause');
+                } else {
+                    if (currentTrackIndex === -1) currentTrackIndex = 0;
+                    playTrack(currentTrackIndex);
+                }
+                updateMusicPlayerUI();
+            });
+            document.getElementById('next-track-btn').addEventListener('click', () => {
+                if (musicPlaylist.length === 0) return;
+                const nextIndex = (currentTrackIndex + 1) % musicPlaylist.length;
+                playTrack(nextIndex);
+            });
+            document.getElementById('volume-slider').addEventListener('input', (e) => {
+                const volume = e.target.value / 100;
+                localAudioPlayer.volume = volume;
+                updateMediaControls('set_volume', { volume });
+            });
+            localAudioPlayer.addEventListener('ended', handleTrackEnd);
+
+            // --- YouTube Remote Listeners ---
+            const youtubeInput = document.getElementById('youtube-input');
+            const youtubeActionBtn = document.getElementById('youtube-action-btn');
+            
+            youtubeInput.addEventListener('input', () => {
+                const value = youtubeInput.value.trim();
+                youtubeActionBtn.disabled = !value;
+                if (extractYouTubeID(value)) {
+                    youtubeActionBtn.textContent = 'Add to Playlist';
+                    youtubeActionBtn.dataset.action = 'add';
+                } else {
+                    youtubeActionBtn.textContent = 'Search YouTube';
+                    youtubeActionBtn.dataset.action = 'search';
+                }
+            });
+
+            youtubeActionBtn.addEventListener('click', async () => {
+                const action = youtubeActionBtn.dataset.action;
+                const value = youtubeInput.value.trim();
+                if (action === 'add') {
+                    const videoId = extractYouTubeID(value);
+                    if (videoId) {
+                        try {
+                            const res = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`);
+                            const data = await res.json();
+                            const newVideo = { id: videoId, title: data.title, thumbnail: data.thumbnail_url };
+                            if (!ytPlayerState.playlist.find(v => v.id === videoId)) ytPlayerState.playlist.push(newVideo);
+                            if (ytPlayerState.currentIndex < 0) ytPlayerState.currentIndex = ytPlayerState.playlist.length - 1;
+                            if (!ytPlayerState.isPlaying) ytPlayerState.isPlaying = true;
+                            sendYtPlayerState();
+                            youtubeInput.value = '';
+                            youtubeInput.dispatchEvent(new Event('input'));
+                        } catch (e) { alert("Could not add video."); }
+                    }
+                } else { // search
+                     window.open('https://www.youtube.com/results?search_query=' + encodeURIComponent(value), '_blank');
+                }
+            });
+
+            document.getElementById('yt-play-pause-btn').addEventListener('click', () => {
+                if (ytPlayerState.playlist.length > 0) {
+                    ytPlayerState.isPlaying = !ytPlayerState.isPlaying;
+                    sendYtPlayerState();
+                }
+            });
+            document.getElementById('tv-yt-stop-btn').addEventListener('click', () => {
+                ytPlayerState.isPlaying = false;
+                ytPlayerState.currentIndex = -1;
+                ytPlayerState.playlist = [];
+                sendYtPlayerState();
+            });
+            document.getElementById('yt-progress-bar').addEventListener('input', (e) => {
+                const duration = parseFloat(e.target.dataset.duration || 0);
+                if (!duration) return;
+                const newTime = (e.target.value / 100) * duration;
+                ytPlayerState.seekTo = newTime;
+                sendYtPlayerState();
+            });
+
+            document.getElementById('layout-token-btn').addEventListener('click', () => updateMediaControls('set_layout', { layout: 'token_only' }));
+            document.getElementById('layout-split-btn').addEventListener('click', () => updateMediaControls('set_layout', { layout: 'split' }));
+            document.getElementById('layout-full-tv-btn').addEventListener('click', () => updateMediaControls('set_layout', { layout: 'full_tv' }));
+            
+            mediaControlsRef.child('playerStatus').on('value', (snapshot) => {
+                if (!snapshot.exists()) return;
+                const status = snapshot.val();
+                const ytPlayIcon = document.getElementById('yt-play-icon');
+                const ytPauseIcon = document.getElementById('yt-pause-icon');
+                const ytProgressBar = document.getElementById('yt-progress-bar');
+
+                ytPlayerState.isPlaying = status.isPlaying;
+                ytPlayIcon.classList.toggle('hidden', status.isPlaying);
+                ytPauseIcon.classList.toggle('hidden', !status.isPlaying);
+
+                if (status.duration > 0) {
+                    ytProgressBar.disabled = false;
+                    ytProgressBar.value = (status.currentTime / status.duration) * 100;
+                    ytProgressBar.dataset.duration = status.duration;
+                    document.getElementById('yt-current-time').textContent = formatTime(status.currentTime);
+                    document.getElementById('yt-duration').textContent = formatTime(status.duration);
+                } else {
+                    ytProgressBar.disabled = true;
+                    ytProgressBar.value = 0;
+                }
+            });
+
+
+            updateMusicPlayerUI();
         });
     </script>
 
