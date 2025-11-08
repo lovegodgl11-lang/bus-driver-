@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en" class=""><head><script>window.livecodes = window.livecodes || {};</script><title>Bus driver </title><meta name="title" content="Bus driver "><meta name="description" content="Add all staff members "><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="stylesheet" href="./style.css"><script src="https://cdn.jsdelivr.net/npm/es-module-shims@1.10.0/dist/es-module-shims.js" async=""></script><script type="importmap">{
+  "imports": {}
+}</script></head><body>
+
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bus Driver - Staff Transport</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+    </style>
+
+
+    <div class="max-w-4xl mx-auto p-4">
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">Staff Transport Management</h1>
+
+        <!-- Controls -->
+        <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+            <h2 class="text-xl font-bold mb-3">Trip Controls</h2>
+            <div class="flex items-center gap-4">
+                <button id="trip-toggle-btn" class="bg-green-600 text-white font-semibold py-2 px-6 rounded-lg shadow-md hover:bg-green-700">Start Trip</button>
+                <div class="text-sm">
+                    <p>Status: <span id="trip-status" class="font-bold text-gray-600">Idle</span></p>
+                    <p>Location: <span id="location-status" class="font-bold text-gray-600">Not Sharing</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Staff -->
+        <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+            <h2 class="text-xl font-bold mb-3">Add Staff Member</h2>
+            <form id="add-staff-form" class="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
+                <div class="sm:col-span-1">
+                    <label for="staff-name" class="block text-sm font-medium text-gray-700">Name</label>
+                    <input type="text" id="staff-name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required="">
+                </div>
+                <div class="sm:col-span-1">
+                    <label for="mobile-number" class="block text-sm font-medium text-gray-700">Mobile Number</label>
+                    <input type="tel" id="mobile-number" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required="" pattern="\d{10}">
+                </div>
+                <div class="sm:col-span-1">
+                    <label for="destination" class="block text-sm font-medium text-gray-700">Destination</label>
+                    <input type="text" id="destination" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required="">
+                </div>
+                <div class="sm:col-span-1">
+                    <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 font-semibold">Add Staff</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Staff Queue -->
+        <div class="bg-white shadow-md rounded-lg overflow-x-auto">
+             <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Token</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Destination</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="queue-body" class="bg-white divide-y divide-gray-200">
+                    <!-- Rows will be injected here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyC0_DQIiyaVQllFH4pxH1Dm3r2kFXXoOgc",
+            authDomain: "navrosetailorapp.firebaseapp.com",
+            databaseURL: "https://navrosetailorapp-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "navrosetailorapp"
+        };
+        
+        let db, staffQueueRef, busDetailsRef;
+        let isTripActive = false;
+        let staffQueue = [];
+        let locationWatcherId = null;
+
+        const getTodayDateString = () => new Date().toISOString().slice(0, 10);
+
+        function renderQueue() {
+            const queueBody = document.getElementById('queue-body');
+            queueBody.innerHTML = '';
+            staffQueue.sort((a,b) => a.tokenNumber - b.tokenNumber).forEach(staff => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap font-bold text-lg">${staff.tokenNumber}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${staff.staffName}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${staff.destination}</td>
+                    <td class="px-6 py-4 whitespace-nowrap"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">${staff.status}</span></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-1" data-key="${staff.key}">
+                        ${staff.status === 'Waiting' ? `<button class="action-btn-onboard px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600">On Board</button>` : ''}
+                        ${staff.status === 'On Board' ? `<button class="action-btn-dropped px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600">Dropped</button>` : ''}
+                        <button class="action-btn-delete px-2 py-1 bg-red-200 text-red-800 rounded hover:bg-red-300">Delete</button>
+                    </td>
+                `;
+                queueBody.appendChild(row);
+            });
+        }
+
+        function updateStaffStatus(key, status) {
+            staffQueueRef.child(key).update({ status: status });
+        }
+
+        function deleteStaff(key) {
+            staffQueueRef.child(key).remove();
+        }
+
+        function updateLocation(position) {
+            const { latitude, longitude } = position.coords;
+            busDetailsRef.child('live_location').set({ latitude, longitude, timestamp: Date.now() });
+            document.getElementById('location-status').textContent = `Sharing (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`;
+        }
+        
+        function handleLocationError(error) {
+            console.error("Geolocation error:", error);
+            document.getElementById('location-status').textContent = 'Error!';
+            alert("Could not get location. Please enable location services.");
+        }
+
+        function toggleTrip() {
+            isTripActive = !isTripActive;
+            const tripToggleBtn = document.getElementById('trip-toggle-btn');
+            const tripStatus = document.getElementById('trip-status');
+            const locationStatus = document.getElementById('location-status');
+
+            if (isTripActive) {
+                busDetailsRef.update({ status: 'On Route' });
+                tripToggleBtn.textContent = 'End Trip';
+                tripToggleBtn.classList.replace('bg-green-600', 'bg-red-600');
+                tripToggleBtn.classList.replace('hover:bg-green-700', 'hover:bg-red-700');
+                tripStatus.textContent = 'On Route';
+                if (navigator.geolocation) {
+                    locationWatcherId = navigator.geolocation.watchPosition(updateLocation, handleLocationError, { enableHighAccuracy: true });
+                } else {
+                    alert("Geolocation is not supported by this browser.");
+                }
+            } else {
+                busDetailsRef.update({ status: 'Idle', live_location: null });
+                tripToggleBtn.textContent = 'Start Trip';
+                tripToggleBtn.classList.replace('bg-red-600', 'bg-green-600');
+                tripToggleBtn.classList.replace('hover:bg-red-700', 'hover:bg-green-700');
+                tripStatus.textContent = 'Idle';
+                locationStatus.textContent = 'Not Sharing';
+                if (locationWatcherId !== null) {
+                    navigator.geolocation.clearWatch(locationWatcherId);
+                    locationWatcherId = null;
+                }
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+            
+            const today = getTodayDateString();
+            staffQueueRef = db.ref(`bus_transport/${today}/staff_queue`);
+            busDetailsRef = db.ref(`bus_transport/${today}/bus_details`);
+            
+            document.getElementById('add-staff-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const staffName = document.getElementById('staff-name').value;
+                const mobileNumber = document.getElementById('mobile-number').value;
+                const destination = document.getElementById('destination').value;
+
+                const lastTokenSnapshot = await staffQueueRef.orderByChild('tokenNumber').limitToLast(1).once('value');
+                const lastToken = lastTokenSnapshot.exists() ? Object.values(lastTokenSnapshot.val())[0].tokenNumber : 0;
+
+                const newStaff = {
+                    tokenNumber: lastToken + 1,
+                    staffName,
+                    mobileNumber,
+                    destination,
+                    status: 'Waiting',
+                    timestamp: Date.now()
+                };
+
+                staffQueueRef.push(newStaff);
+                e.target.reset();
+            });
+
+            document.getElementById('trip-toggle-btn').addEventListener('click', toggleTrip);
+
+            document.getElementById('queue-body').addEventListener('click', (e) => {
+                const key = e.target.closest('td').dataset.key;
+                if (!key) return;
+                
+                if (e.target.classList.contains('action-btn-onboard')) {
+                    updateStaffStatus(key, 'On Board');
+                } else if (e.target.classList.contains('action-btn-dropped')) {
+                    updateStaffStatus(key, 'Dropped Off');
+                } else if (e.target.classList.contains('action-btn-delete')) {
+                    if (confirm('Are you sure you want to delete this entry?')) {
+                        deleteStaff(key);
+                    }
+                }
+            });
+
+            staffQueueRef.on('value', snapshot => {
+                const data = snapshot.val() || {};
+                staffQueue = Object.keys(data).map(key => ({ key, ...data[key] }));
+                renderQueue();
+            });
+        });
+    </script>
+
+<script src="./script.js"></script></body></html>
